@@ -11,8 +11,8 @@
 #include <X11/keysym.h>
 #include <fcntl.h>
 
-#define CPU_CORES 4
-#define BENCHMARK_ITERATIONS 20
+#define CPU_CORES 8
+#define BENCHMARK_ITERATIONS 100
 int Version = 0;
 
 static int dim = 800;
