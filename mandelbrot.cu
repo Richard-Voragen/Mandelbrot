@@ -11,8 +11,8 @@
 #include <X11/keysym.h>
 #include <fcntl.h>
 
-#define CPU_CORES 4
-#define BENCHMARK_ITERATIONS 20
+#define CPU_CORES 8
+#define BENCHMARK_ITERATIONS 100
 int Version = 0;
 
 static int dim = 800;
@@ -187,8 +187,8 @@ double display_double_single(double xcen, double ycen, double scale,
 
 #ifdef BENCHMARK
     double stop = omp_get_wtime();
-    if (Version == 0) printf("Version: Single Core\tTime: %f\r", stop - start);
-    else printf("Version: OpenMP\t\tTime: %f\r", stop - start);
+    //if (Version == 0) printf("Version: Single Core\tTime: %f\r", stop - start);
+    //else printf("Version: OpenMP\t\tTime: %f\r", stop - start);
     fflush(stdout);
 #endif
 
@@ -283,7 +283,7 @@ double display_double_cuda(double xcen, double ycen, double scale,
 
 #ifdef BENCHMARK
     double stop = omp_get_wtime();
-    printf("Version: CUDA\t\tTime: %f\r", stop - start);
+    //printf("Version: CUDA\t\tTime: %f\r", stop - start);
     fflush(stdout);
 #endif
 #ifdef SHOW_X
@@ -310,7 +310,7 @@ void swapVersion(void) {
 #ifdef BENCHMARK
     double speedup;
     if (Version == 0) {
-        single_core = total_time/instances;    
+        single_core = total_time/instances; 
         printf("Avg time for Single: %.6f   Instances: %d\tSpeedup: 1\n", total_time/instances, instances);
     } else {
         speedup = single_core/(total_time/instances);
@@ -337,20 +337,31 @@ void swapVersion(void) {
 
 int main(int argc, char** argv){
     cudaError_t err = cudaSuccess;
-    if (argc >= 2) 
+    printf("%s", argv[0]);
+    if (argc >= 2){
         n = atoi(argv[1]);
-    if (argc >= 3) 
+        printf(" %s", argv[1]);
+    }
+    if (argc >= 3){ 
         m = atoi(argv[2]);
-    if (argc >= 4) 
+        printf(" %s", argv[2]);
+    }
+    if (argc >= 4){
         dim = atoi(argv[3]);
-    if (argc >= 5) 
+        printf(" %s", argv[3]);
+    }
+    if (argc >= 5){
         max_iter = atoi(argv[4]);
+        printf(" %s", argv[4]);
+    }
     size_t color_size = (max_iter +1) * sizeof(uint32_t);
     colors = (uint32_t *) malloc(color_size);
     cudaMalloc((void**)&device_colors, color_size);
     double xcen = -0.5;
     double ycen = 0;
     double scale = 3;
+    printf("\n");
+    
 
 #ifdef SHOW_X
 	init_x11();
