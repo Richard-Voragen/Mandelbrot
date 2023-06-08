@@ -1,12 +1,6 @@
 \documentclass{article}
 \usepackage{hyperref}
 \usepackage{listings}
-\usepackage[
-backend=biber,
-style=alphabetic,
-sorting=ynt
-]{biblatex}
-\addbibresource{biblio.bib}
 
 \author{
 	Dube, Fletcher\\
@@ -24,15 +18,21 @@ sorting=ynt
 \maketitle
 
 \section{Introduction}
-The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function $f_c(z) = z^2 + c$ does not diverge to infinity when iterated from $z = 0$. \cite{mandel_wiki}
+The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function $$f_c(z) = z^2 + c$$ does not diverge to infinity when iterated from $z = 0$ \cite{mandel_wiki}. In simple terms: choose a complex number $c$, and let $z = 0$. Compute the result, and let $z$ be that result. Continue iterating until the function results in a value that exceeds some threshold, or until some large number of iterations have been computed. If the function exceeds the threshold, the function diverges and $c$ is \emph{not} in the set. Otherwise, the function does not diverge and $c$ is included in the set. In our program, each value for $c$ which diverges is color coded according to how many iterations run before the threshold is exceeded.
+
+\section{OpenMP}
+
+\section{CUDA}
+There are a number of 
 
 \appendix
 \section{Code}
 \lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
-\lstinputlisting{Mandelbrot/mandelbrot.cu}
+\lstinputlisting{mandelbrot.cu}
 
 \section{``Who did what?''}
 
-\printbibliography
+\bibliography{biblio} 
+\bibliographystyle{ieeetr}
 
 \end{document}
