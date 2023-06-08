@@ -2,6 +2,9 @@
 \usepackage{hyperref}
 \usepackage{listings}
 
+\usepackage{caption}
+\captionsetup[lstlisting]{font={small,tt}}
+
 \author{
 	Dub\'e, Fletcher\\
 	\texttt{\#921441405}
@@ -43,13 +46,14 @@ The problem is to be broken up by sets of pixels: each worker takes some set of 
 \section{Implementation} \label{sec:impl}
 The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation, as well as a benchmarking utility.
 
+\subsection{Serial}
+As a baseline, a serial version of the Mandelbrot algorithm is implemented. The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
+
 \subsection{OpenMP}
+
 
 \subsection{CUDA}
 
-
-\subsection{Serial}
-The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to compute Mandelbrot serially
 
 
 \section{Results}
@@ -62,12 +66,61 @@ The provided CUDA kernel was copied into a function \verb|mandel_double_single| 
 	\item \emph{Leonardo Redivo}: CUDA optimization and testing; PowerPoint presentation; \LaTeX{}.
 
 	\item \emph{Richard Voragen}: UX (zoom, pan), serial, and OpenMP code in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; assisted in PowerPoint presentation; \LaTeX{}.
-
 \end{itemize}
 
-\section{Code} \label{appendix:mandelbrot.cu}
+\section{Code}
 \lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
-\lstinputlisting{mandelbrot.cu}
+
+\begin{lstlisting}[caption={Serial Mandelbrot},label={appendix:serial}]
+uint32_t mandel_double_single(double cr, double ci, int max_iter) {
+    double zr = 0, zi = 0, zrsqr = 0, zisqr = 0;
+
+    uint32_t i;
+
+    for (i = 0; i < max_iter; i++){
+		zi = zr * zi;
+		zi += zi;
+		zi += ci;
+		zr = zrsqr - zisqr + cr;
+		zrsqr = zr * zr;
+		zisqr = zi * zi;
+		
+    //the fewer iterations it takes to diverge, the farther from the set
+		if (zrsqr + zisqr > 4.0) break;
+    }
+    return i;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={OpenMP Mandelbrot},label={appendix:omp}]
+void mandel_single(uint32_t *counts, double xmin, double ymin,
+            double step, int max_iter, int dim, uint32_t *colors) {
+    int i, x, y;
+    double cr, ci;
+    if (Version == 1){
+        # pragma omp parallel for num_threads(CPU_CORES) \
+            schedule(runtime) private(i,x,y,cr,ci) \
+            shared(counts, dim, colors, xmin, ymin, step, max_iter)
+        for (i = 1; i < dim*dim; i++){
+            x = i % dim;
+            y = i / dim;
+            cr = xmin + x * step;
+            ci = ymin + y * step;
+            counts[y * dim + x]  = colors[mandel_double_single(cr, ci, max_iter)];
+        }
+    } else {
+        for (i = 1; i < dim*dim; i++){
+            x = i % dim;
+            y = i / dim;
+            cr = xmin + x * step;
+            ci = ymin + y * step;
+            counts[y * dim + x]  = colors[mandel_double_single(cr, ci, max_iter)];
+        }
+    }
+}
+\end{lstlisting}
+
+\lstinputlisting[caption={mandelbro.cu},label={appendix:mandelbrot.cu}]{mandelbrot.cu}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}
