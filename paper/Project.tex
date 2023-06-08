@@ -50,10 +50,9 @@ The base source code was taken from Macalester College \cite{mandel_orig}, which
 As a baseline, a serial version of the Mandelbrot algorithm is implemented (appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
 
 \subsection{OpenMP}
-To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (appendix \ref{appendix:omp}.)
+To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|.
 
 \subsection{CUDA}
-
 
 
 \section{Results}
@@ -61,11 +60,11 @@ To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pr
 \pagebreak
 \section{``Who did what?''}
 \begin{itemize}
-	\item \emph{Fletcher Dub\'e}: \LaTeX{}; assisted in PowerPoint presentation.
+	\item \emph{Fletcher}: \LaTeX{}; assisted in PowerPoint presentation.
 
-	\item \emph{Leonardo Redivo}: CUDA optimization and testing; PowerPoint presentation; \LaTeX{}.
+	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint presentation; \LaTeX{}.
 
-	\item \emph{Richard Voragen}: UX (zoom, pan), serial, and OpenMP code in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; assisted in PowerPoint presentation; \LaTeX{}.
+	\item \emph{Richard}: UX (zoom, pan), serial, and OpenMP code in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; assisted in PowerPoint presentation; \LaTeX{}.
 \end{itemize}
 
 \section{Code}
@@ -122,7 +121,8 @@ void mandel_single(uint32_t *counts, double xmin, double ymin,
 }
 \end{lstlisting}
 
-\lstinputlisting[caption={mandelbro.cu},label={appendix:mandelbrot.cu}]{../mandelbrot.cu}
+\subsection{Entire Program} \label{appendix:mandelbro.cu}
+\lstinputlisting[caption={mandelbro.cu}]{../mandelbrot.cu}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}
