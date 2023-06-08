@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage[
+backend=biber,
+style=alphabetic,
+sorting=ynt
+]{biblatex}
+\addbibresource{biblio.bib}
+
+\author{
+	Dube, Fletcher\\
+	\texttt{\#921441405}
+	\and
+	Redivo, Leonardo\\
+	\texttt{\#918072175}
+	\and
+	Voragen, Richard\\
+	\texttt{\#917981018}
+}
+\title{Parallel Mandelbrot: \\An exercise in CUDA and OpenMP}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function $f_c(z) = z^2 + c$ does not diverge to infinity when iterated from $z = 0$. \cite{mandel_wiki}
+
+\appendix
+\section{Code}
+\lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
+\lstinputlisting{Mandelbrot/mandelbrot.cu}
+
+\section{``Who did what?''}
+
+\printbibliography
+
+\end{document}
