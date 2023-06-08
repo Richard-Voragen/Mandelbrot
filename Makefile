@@ -1,6 +1,6 @@
 CC 			= gcc
 CFLAGS 		= -Wall -g
-LFLAGS 		= -lX11 -lgomp -lm
+LFLAGS 		= -lX11 -lgomp -lm -Xcompiler -fopenmp
 XFLAG 		= -D SHOW_X
 BFLAG 		= -D BENCHMARK
 NVCC 		= nvcc
