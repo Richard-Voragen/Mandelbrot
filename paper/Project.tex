@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\usepackage{caption}
+\captionsetup[lstlisting]{font={small,tt}}
+
+\author{
+	Dub\'e, Fletcher\\
+	\texttt{\#921441405}
+	\and
+	Redivo, Leonardo\\
+	\texttt{\#918072175}
+	\and
+	Voragen, Richard\\
+	\texttt{\#917981018}
+}
+\title{Parallel Mandelbrot: \\An exercise in CUDA and OpenMP}
+
+\begin{document}
+\maketitle
+
+\section{Introduction} \label{sec:intro}
+The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function
+\begin{equation} \label{eq:mandelbrot}
+f_c(z) = z^2 + c
+\end{equation}
+does not diverge to infinity when iterated from $z = 0$ \cite{mandel_wiki}. In simple terms: choose a complex number $c$, and let $z = 0$. Compute the result, and let $z$ be that result. Continue iterating until the function results in a value that exceeds some threshold, or until some large number of iterations have been computed. If the function exceeds the threshold, the function diverges and $c$ is \emph{not} in the set. Otherwise, the function does not diverge and $c$ is included in the set.
+
+\section{Parallel Design}
+To render the Mandelbrot set on the complex plane, each complex number is represented by a pixel. A pixel is colored black if it is in the Mandelbrot set. Otherwise, it is given a color based on how many iterations it took before the value of the function exceeded the threshold. Given that each pixel can be colored independent of other pixels, the problem is embarassingly parallel.
+
+\subsection{Partitioning}
+The essential task in this problem is to color a single pixel as described above. Therefore, the color of many different pixels is computed in parallel.
+
+\subsection{Communication}
+The primitive tasks are completely independent of each other, so the tasks need not communicate with each other. However, the result (pixel color) of each task must be delivered to some combined data structure that represents the color of each point on the plane.
+
+\subsection{Agglomeration}
+Each primitive task requires no information except the complex number it represents. Additionally, the only work done is to repeatedly apply function \ref{eq:mandelbrot}. Therefore, it is not appropriate to agglomerate any tasks.
+
+\subsection{Mapping}
+The problem is to be broken up by sets of pixels: each worker takes some set of pixels to color.
+
+
+\section{Implementation} \label{sec:impl}
+The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation, as well as a benchmarking utility.
+
+\subsection{Serial}
+As a baseline, a serial version of the Mandelbrot algorithm is implemented (appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
+
+\subsection{OpenMP}
+To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (appendix \ref{appendix:omp}.)
+
+\subsection{CUDA}
+
+
+
+\section{Results}
+\appendix
+\pagebreak
+\section{``Who did what?''}
+\begin{itemize}
+	\item \emph{Fletcher Dub\'e}: \LaTeX{}; assisted in PowerPoint presentation.
+
+	\item \emph{Leonardo Redivo}: CUDA optimization and testing; PowerPoint presentation; \LaTeX{}.
+
+	\item \emph{Richard Voragen}: UX (zoom, pan), serial, and OpenMP code in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; assisted in PowerPoint presentation; \LaTeX{}.
+\end{itemize}
+
+\section{Code}
+\lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
+
+\subsection{Serial Mandelbrot}\label{appendix:serial}
+\begin{lstlisting}
+uint32_t mandel_double_single(double cr, double ci, int max_iter) {
+    double zr = 0, zi = 0, zrsqr = 0, zisqr = 0;
+
+    uint32_t i;
+
+    for (i = 0; i < max_iter; i++){
+		zi = zr * zi;
+		zi += zi;
+		zi += ci;
+		zr = zrsqr - zisqr + cr;
+		zrsqr = zr * zr;
+		zisqr = zi * zi;
+		
+    //the fewer iterations it takes to diverge, the farther from the set
+		if (zrsqr + zisqr > 4.0) break;
+    }
+    return i;
+}
+\end{lstlisting}
+
+\subsection{OpenMP Mandelbrot}\label{appendix:omp}
+\begin{lstlisting}
+void mandel_single(uint32_t *counts, double xmin, double ymin,
+            double step, int max_iter, int dim, uint32_t *colors) {
+    int i, x, y;
+    double cr, ci;
+    if (Version == 1){
+        # pragma omp parallel for num_threads(CPU_CORES) \
+            schedule(runtime) private(i,x,y,cr,ci) \
+            shared(counts, dim, colors, xmin, ymin, step, max_iter)
+        for (i = 1; i < dim*dim; i++){
+            x = i % dim;
+            y = i / dim;
+            cr = xmin + x * step;
+            ci = ymin + y * step;
+            counts[y * dim + x]  = colors[mandel_double_single(cr, ci, max_iter)];
+        }
+    } else {
+        for (i = 1; i < dim*dim; i++){
+            x = i % dim;
+            y = i / dim;
+            cr = xmin + x * step;
+            ci = ymin + y * step;
+            counts[y * dim + x]  = colors[mandel_double_single(cr, ci, max_iter)];
+        }
+    }
+}
+\end{lstlisting}
+
+\lstinputlisting[caption={mandelbro.cu},label={appendix:mandelbrot.cu}]{mandelbrot.cu}
+
+\bibliography{biblio} 
+\bibliographystyle{ieeetr}
+
+\end{document}
