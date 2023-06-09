@@ -58,7 +58,7 @@
         \ref{appendix:cuda}
 
 \section{Experimentation}
-    The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary between GPUs.
+    The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary among GPUs.
 
     In each case, one-hundred $1600 \times 1600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
 
@@ -81,16 +81,15 @@
 
     The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 32 blocks and 16\,384 threads per block yielded an 84.98x speedup over the serial version.
 
-
 \pagebreak    
 \appendix
     \section{``Who did what?''}
         \begin{itemize}
         	\item \emph{Fletcher}: \LaTeX{}; PowerPoint.
 
-        	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint; \LaTeX{}.
+        	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint.
 
-        	\item \emph{Richard}: UX (zoom, pan), serial, and OpenMP in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; PowerPoint; \LaTeX{}.
+        	\item \emph{Richard}: UX (zoom and pan), serial, and OpenMP in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; PowerPoint.
         \end{itemize}
 
     \section{Code}
