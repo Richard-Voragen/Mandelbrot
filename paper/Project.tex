@@ -52,10 +52,10 @@
         As a baseline, a serial version of the Mandelbrot algorithm is implemented (Appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
 
     \subsection{OpenMP}
-        To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|.
+        To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|. In testing, the \verb|guided| strategy resulted in the most speedup.
 
     \subsection{CUDA}
-        \ref{appendix:cuda}
+        The CUDA implementation (Appendix \ref{appendix:cuda}) determines the number of pixels for each thread, and each thread computes the color of each pixel assigned to it. These computed values are stored in a shared memory array \verb|colors[]|, which is then copied to host memory after the threads finish.
 
 \section{Experimentation}
     The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary among GPUs.
@@ -65,31 +65,33 @@
     \def\boxit#1{%
       \smash{\fboxsep=0pt\llap{\rlap{\fbox{\strut\makebox[#1]{}}}~}}\ignorespaces
     }
+
     \renewcommand{\arraystretch}{1.5}
     \begin{table}[h]
     \centering
     \caption{Speedup based on thread configuration}
     \begin{tabular}{r | r || r}\label{tab:speedup}
     \# of blocks & threads/block & speedup \\ \hline
-    524\,288 & 1 & 2.89 \\
-    512 & 1\,024 & 35.28 \\
-    64 & 8\,192 & 80.53 \\
-    \boxit{137pt}32 & 16\,384 & 84.98 \\
-    1 & 524\,288 & 3.53
+    512                 & 1\,024    & 104.49 \\
+    1\,024              & 512       & 105.89 \\
+    \boxit{150pt}2\,048 & 256       & 106.83 \\
+    4\,096              & 128       & 104.34 \\
+    8\,192              & 64        & 104.84 \\
+    16\,384             & 32        & 104.45
     \end{tabular}
     \end{table}
 
-    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 32 blocks and 16\,384 threads per block yielded an 84.98x speedup over the serial version.
+    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 106.83x speedup over the serial version. Any improvement is fairly minimal, with only 2.34x difference between the fastest and the slowest thread configurations. The program was run on an NVIDIA GeForce RTX 2060 with compute capability 7.5; it's worth noting that in limited testing on less capable hardware the effect was more pronounced.
 
 \pagebreak    
 \appendix
     \section{``Who did what?''}
         \begin{itemize}
-        	\item \emph{Fletcher}: \LaTeX{}; PowerPoint.
+        	\item \emph{Fletcher}: \LaTeX{}; CUDA optimization and testing; PowerPoint.
 
         	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint.
 
-        	\item \emph{Richard}: UX (zoom and pan), serial, and OpenMP in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; PowerPoint.
+        	\item \emph{Richard}: UX (zoom and pan), serial, and OpenMP in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; PowerPoint.
         \end{itemize}
 
     \section{Code}
@@ -172,12 +174,12 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin,
 }
 \end{lstlisting}
 
-        \subsection{Entire Program} \label{appendix:mandelbro.cu}
-            \lstinputlisting[caption={mandelbro.cu}]{../mandelbrot.cu}
+        \subsection{Entire Program} \label{appendix:mandelbrot.cu}
+            \lstinputlisting[caption={mandelbrot.cu}]{../mandelbrot.cu}
 
     \section{Test runs} \label{appendix:testdata}
         \lstset{language={},numbers=none}
-        \lstinputlisting{output.txt}
+        \lstinputlisting{testing.txt}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}
