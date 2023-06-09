@@ -60,7 +60,6 @@ void usage(){
     printf("\tmem_mode\t=\t0 for manual memory management, 1 for unified (defaults to 0)\n\n");
 
     exit(1);
-
 }
 
 // create Xwindow 
@@ -354,8 +353,9 @@ void swapVersion(void) {
 }
 
 int main(int argc, char** argv){
-    if(argc == 1){
+    if(argc < 2){
         usage();
+        return 0;
     }
     cudaError_t err = cudaSuccess;
     printf("%s", argv[0]);
