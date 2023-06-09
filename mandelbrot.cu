@@ -19,7 +19,6 @@ static int dim = 800;
 static int n = 512;
 static int m = 512;
 static int max_iter = 100;
-static int mem_mode = 0;
 static uint32_t *colors;
 uint32_t *device_colors;
 
@@ -339,7 +338,7 @@ void swapVersion(void) {
 
 void usage(){
 
-    printf("Usage: benchmark [n] [m] [dim] [max_iter] [mem_mode]\n");
+    printf("Usage: benchmark [n] [m] [dim] [max_iter]\n");
 
     printf("\tn\t\t=\tnumber of blocks (defaults to 512)\n");
 
@@ -348,8 +347,6 @@ void usage(){
     printf("\tdim\t\t=\twidth/height of canvas in pixels (defaults to 1600)\n");
 
     printf("\tmax_iter\t=\tmax iterations (defaults to 100)\n\n");
-
-    printf("\tmem_mode\t=\t0 for manual memory management, 1 for unified (defaults to 0)\n\n");
 
     exit(1);
 }
@@ -378,10 +375,10 @@ int main(int argc, char** argv){
         max_iter = atoi(argv[4]);
         printf(" %s", argv[4]);
     }
-    if (argc >= 6){
-        mem_mode = atoi(argv[5]);
-        printf(" %s", argv[5]);
-    }
+    // if (argc >= 6){
+    //     mem_mode = atoi(argv[5]);
+    //     printf(" %s", argv[5]);
+    // }
     size_t color_size = (max_iter +1) * sizeof(uint32_t);
     colors = (uint32_t *) malloc(color_size);
     cudaMalloc((void**)&device_colors, color_size);
