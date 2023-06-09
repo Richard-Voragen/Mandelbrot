@@ -5,6 +5,8 @@
 \usepackage{caption}
 \captionsetup[lstlisting]{font={small,tt}}
 
+\usepackage{fancyvrb}
+
 \author{
 	Dub\'e, Fletcher\\
 	\texttt{\#921441405}
@@ -21,56 +23,80 @@
 \maketitle
 
 \section{Introduction} \label{sec:intro}
-The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function
-\begin{equation} \label{eq:mandelbrot}
-f_c(z) = z^2 + c
-\end{equation}
-does not diverge to infinity when iterated from $z = 0$ \cite{mandel_wiki}. In simple terms: choose a complex number $c$, and let $z = 0$. Compute the result, and let $z$ be that result. Continue iterating until the function results in a value that exceeds some threshold, or until some large number of iterations have been computed. If the function exceeds the threshold, the function diverges and $c$ is \emph{not} in the set. Otherwise, the function does not diverge and $c$ is included in the set.
+    The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function
+    \begin{equation} \label{eq:mandelbrot}
+    f_c(z) = z^2 + c
+    \end{equation}
+    does not diverge to infinity when iterated from $z = 0$ \cite{mandel_wiki}. In simple terms: choose a complex number $c$, and let $z = 0$. Compute the result, and let $z$ be that result. Continue iterating until the function results in a value that exceeds some threshold, or until some large number of iterations have been computed. If the function exceeds the threshold, the function diverges and $c$ is \emph{not} in the set. Otherwise, the function does not diverge and $c$ is included in the set.
 
 \section{Parallel Design}
-To render the Mandelbrot set on the complex plane, each complex number is represented by a pixel. A pixel is colored black if it is in the Mandelbrot set. Otherwise, it is given a color based on how many iterations it took before the value of the function exceeded the threshold. Given that each pixel can be colored independent of other pixels, the problem is embarassingly parallel.
+    To render the Mandelbrot set on the complex plane, each complex number is represented by a pixel. A pixel is colored black if it is in the Mandelbrot set. Otherwise, it is given a color based on how many iterations before the value of the function exceeded the threshold. Given that each pixel can be colored independent of other pixels, the problem is embarassingly parallel.
 
-\subsection{Partitioning}
-The essential task in this problem is to color a single pixel as described above. Therefore, the color of many different pixels is computed in parallel.
+    \subsection{Partitioning}
+        The essential task in this problem is to color a single pixel as described above. Therefore, the color of many different pixels is computed in parallel.
 
-\subsection{Communication}
-The primitive tasks are completely independent of each other, so the tasks need not communicate with each other. However, the result (pixel color) of each task must be delivered to some combined data structure that represents the color of each point on the plane.
+    \subsection{Communication}
+        The primitive tasks are completely independent of each other, so the tasks need not communicate with each other. However, the result (pixel color) of each task must be delivered to some combined data structure that represents the color of each point on the plane.
 
-\subsection{Agglomeration}
-Each primitive task requires no information except the complex number it represents. Additionally, the only work done is to repeatedly apply function \ref{eq:mandelbrot}. Therefore, it is not appropriate to agglomerate any tasks.
+    \subsection{Agglomeration}
+        Each primitive task requires no information except the complex number it represents. Additionally, the only work done is to repeatedly apply function \ref{eq:mandelbrot}. Therefore, it is not appropriate to agglomerate any tasks.
 
-\subsection{Mapping}
-The problem is to be broken up by sets of pixels: each worker takes some set of pixels to color.
+    \subsection{Mapping}
+        The problem is to be broken up by sets of pixels: each worker takes some set of pixels to color.
 
 
 \section{Implementation} \label{sec:impl}
-The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation, as well as a benchmarking utility.
+    The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation, as well as a benchmarking utility.
 
-\subsection{Serial}
-As a baseline, a serial version of the Mandelbrot algorithm is implemented (appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
+    \subsection{Serial}
+        As a baseline, a serial version of the Mandelbrot algorithm is implemented (Appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
 
-\subsection{OpenMP}
-To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|.
+    \subsection{OpenMP}
+        To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|.
 
-\subsection{CUDA}
+    \subsection{CUDA}
+        \ref{appendix:cuda}
+
+\section{Experimentation}
+    The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary between GPUs.
+
+    In each case, one-hundred $1600 \times 1600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
+
+    \def\boxit#1{%
+      \smash{\fboxsep=0pt\llap{\rlap{\fbox{\strut\makebox[#1]{}}}~}}\ignorespaces
+    }
+    \renewcommand{\arraystretch}{1.5}
+    \begin{table}[h]
+    \centering
+    \caption{Speedup based on thread configuration}
+    \begin{tabular}{r | r || r}\label{tab:speedup}
+    \# of blocks & threads/block & speedup \\ \hline
+    524\,288 & 1 & 2.89 \\
+    512 & 1\,024 & 35.28 \\
+    64 & 8\,192 & 80.53 \\
+    \boxit{137pt}32 & 16\,384 & 84.98 \\
+    1 & 524\,288 & 3.53
+    \end{tabular}
+    \end{table}
+
+    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 32 blocks and 16\,384 threads per block yielded an 84.98x speedup over the serial version.
 
 
-\section{Results}
+\pagebreak    
 \appendix
-\pagebreak
-\section{``Who did what?''}
-\begin{itemize}
-	\item \emph{Fletcher}: \LaTeX{}; assisted in PowerPoint presentation.
+    \section{``Who did what?''}
+        \begin{itemize}
+        	\item \emph{Fletcher}: \LaTeX{}; PowerPoint.
 
-	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint presentation; \LaTeX{}.
+        	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint; \LaTeX{}.
 
-	\item \emph{Richard}: UX (zoom, pan), serial, and OpenMP code in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; assisted in PowerPoint presentation; \LaTeX{}.
-\end{itemize}
+        	\item \emph{Richard}: UX (zoom, pan), serial, and OpenMP in \ref{appendix:mandelbro.cu}; assisted in optimization testing and data collection; PowerPoint; \LaTeX{}.
+        \end{itemize}
 
-\section{Code}
-\lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
+    \section{Code}
+        \lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
 
-\subsection{Serial Mandelbrot}\label{appendix:serial}
+        \subsection{Serial Mandelbrot}\label{appendix:serial}
 \begin{lstlisting}
 uint32_t mandel_double_single(double cr, double ci, int max_iter) {
     double zr = 0, zi = 0, zrsqr = 0, zisqr = 0;
@@ -92,7 +118,7 @@ uint32_t mandel_double_single(double cr, double ci, int max_iter) {
 }
 \end{lstlisting}
 
-\subsection{OpenMP Mandelbrot}\label{appendix:omp}
+        \subsection{OpenMP Mandelbrot}\label{appendix:omp}
 \begin{lstlisting}
 void mandel_single(uint32_t *counts, double xmin, double ymin,
             double step, int max_iter, int dim, uint32_t *colors) {
@@ -121,8 +147,38 @@ void mandel_single(uint32_t *counts, double xmin, double ymin,
 }
 \end{lstlisting}
 
-\subsection{Entire Program} \label{appendix:mandelbro.cu}
-\lstinputlisting[caption={mandelbro.cu}]{../mandelbrot.cu}
+        \subsection{CUDA Mandelbrot}\label{appendix:cuda}
+\begin{lstlisting}
+__global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin,
+            double step, int max_iter, int dim, uint32_t *colors) {
+    int pix_per_thread = dim * dim / (gridDim.x * blockDim.x);
+    int tId = blockDim.x * blockIdx.x + threadIdx.x;
+    int offset = pix_per_thread * tId;
+    for (int i = offset; i < offset + pix_per_thread; i++){
+        int x = i % dim;
+        int y = i / dim;
+        double cr = xmin + x * step;
+        double ci = ymin + y * step;
+        counts[y * dim + x]  = colors[mandel_double(cr, ci, max_iter)];
+    }
+    if (gridDim.x * blockDim.x * pix_per_thread < dim * dim
+            && tId < (dim * dim) - (blockDim.x * gridDim.x)){
+        int i = blockDim.x * gridDim.x * pix_per_thread + tId;
+        int x = i % dim;
+        int y = i / dim;
+        double cr = xmin + x * step;
+        double ci = ymin + y * step;
+        counts[y * dim + x]  = colors[mandel_double(cr, ci, max_iter)];
+    }
+}
+\end{lstlisting}
+
+        \subsection{Entire Program} \label{appendix:mandelbro.cu}
+            \lstinputlisting[caption={mandelbro.cu}]{../mandelbrot.cu}
+
+    \section{Test runs} \label{appendix:testdata}
+        \lstset{language={},numbers=none}
+        \lstinputlisting{output.txt}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}
