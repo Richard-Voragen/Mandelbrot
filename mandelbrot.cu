@@ -12,7 +12,7 @@
 #include <fcntl.h>
 
 #define CPU_CORES 8
-#define BENCHMARK_ITERATIONS 100
+#define BENCHMARK_ITERATIONS 50
 int Version = 0;
 
 static int dim = 800;
@@ -344,7 +344,7 @@ void usage(){
 
     printf("\tm\t\t=\tthreads per block (defaults to 512)\n");
 
-    printf("\tdim\t\t=\twidth/height of canvas in pixels (defaults to 1600)\n");
+    printf("\tdim\t\t=\twidth/height of canvas in pixels (defaults to 800)\n");
 
     printf("\tmax_iter\t=\tmax iterations (defaults to 100)\n\n");
 
