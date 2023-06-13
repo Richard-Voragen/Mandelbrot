@@ -61,7 +61,7 @@
 \section{Experimentation}
     The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary among GPUs.
 
-    In each case, one-hundred $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
+    In each case, fifty $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
 
     \def\boxit#1{%
       \smash{\fboxsep=0pt\llap{\rlap{\fbox{\strut\makebox[#1]{}}}~}}\ignorespaces
