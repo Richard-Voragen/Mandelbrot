@@ -49,8 +49,7 @@
     The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation and simple X11 display, as well as a benchmarking utility.
 
     \subsection{Serial}
-        As a baseline, a serial version of the Mandelbrot algorithm was implemented (Appendix \ref{appendix:serial}.) This version has a number of improvements over a na\"ive implementation.
-        %% richard finish this paragraph
+        As a baseline, a serial version of the Mandelbrot algorithm was implemented (Appendix \ref{appendix:serial}.) This version has a number of improvements over a na\"ive implementation. Just like the OpenMP and the Cuda versions of the code, the serial code runs the exact same function. Instead of utilizing imaginary numbers, it uses separate variables $cr$ and $ci$ to be stand in imaginary numbers. We treat these as if they were multiplied by $\sqrt(-1)$ even though they are not. This allows us to skip using the $cpow$ and $cabs$ functions, thus greatly improving the speed of the serial code.
 
     \subsection{OpenMP}
         To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma is used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause allows the scheduling strategy to be set by changing the command-line environment variable \verb|OMP_SCHEDULE|. The \verb|dynamic| schedule was hypothesized to be optimal, because some blocks of pixels are easier to compute than others, because they converge faster. In testing, the \verb|guided| strategy resulted in the most speedup. This was a surprising result; there is not an obvious ``reverse taper'' of work to be done per complex number (later computations shouldn't necessarily be much more taxing than earlier ones.)
