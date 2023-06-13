@@ -55,13 +55,13 @@
     The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation and simple X11 display, as well as a benchmarking utility.
 
     \subsection{Serial}
-        As a baseline, a serial version of the Mandelbrot algorithm was implemented (Appendix \ref{appendix:serial}.) This version has a number of improvements over a na\"ive implementation. Just like the OpenMP and the Cuda versions of the code, the serial code runs the exact same function. Instead of utilizing imaginary numbers, it uses separate variables $cr$ and $ci$ to be stand in imaginary numbers. We treat these as if they were multiplied by $\sqrt(-1)$ even though they are not. This allows us to skip using the $cpow$ and $cabs$ functions, thus greatly improving the speed of the serial code.
+        As a baseline, a serial version of the Mandelbrot algorithm was implemented (Appendix \ref{appendix:serial}.) This version has one major improvement over a na\"ive implementation. Instead of utilizing imaginary numbers, a complex number is represented by the variables \verb|cr| and \verb|ci|, which represent the real and imaginary portion respectively. The imaginary portion is treated as though it is multiplied by $\sqrt{-1}$. This eliminates any use of the expensive \verb|cpow| and \verb|cabs| functions, thus greatly improving the runtime of the serial code.
 
     \subsection{OpenMP}
         To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma is used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause allows the scheduling strategy to be set by changing the command-line environment variable \verb|OMP_SCHEDULE|. The \verb|dynamic| schedule was hypothesized to be optimal, because some blocks of pixels are easier to compute than others, because they converge faster. In testing, the \verb|guided| strategy resulted in the most speedup. This was a surprising result; there is not an obvious ``reverse taper'' of work to be done per complex number (later computations shouldn't necessarily be much more taxing than earlier ones.)
 
     \subsection{CUDA}
-        The CUDA implementation (Appendix \ref{appendix:cuda}) determines the number of pixels for each thread, and each thread computes the color of each pixel assigned to it. These computed values are stored in a shared memory array \verb|colors[]|, which is then copied to host memory after the threads finish.
+        The original CUDA code was modified to use the complex abstraction above (Appendix \ref{appendix:cuda}.) An equal number of pixels is assigned to each thread sequentially (block partitioning), and each thread computes the color of each pixel assigned to it. These computed values are stored in a shared memory array \verb|colors[]|, which is then copied to host memory after the threads finish.
 
 \section{Experimentation}
     The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. Testing was done on an NVIDIA 1050; any optimal values may vary among GPUs.
@@ -73,7 +73,7 @@
     }
 
     \renewcommand{\arraystretch}{1.5}
-    \begin{table}[h]
+    \begin{table}[ht]
     \centering
     \caption{Speedup based on thread configuration}
     \begin{tabular}{r | r || r}\label{tab:speedup}
