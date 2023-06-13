@@ -46,13 +46,14 @@
 
 
 \section{Implementation} \label{sec:impl}
-    The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation, as well as a benchmarking utility.
+    The base source code was taken from Macalester College \cite{mandel_orig}, which included a basic CUDA implementation and simple X11 display, as well as a benchmarking utility.
 
     \subsection{Serial}
-        As a baseline, a serial version of the Mandelbrot algorithm is implemented (Appendix \ref{appendix:serial}.) The provided CUDA kernel was copied into a function \verb|mandel_double_single| and modified to run serially on one core.
+        As a baseline, a serial version of the Mandelbrot algorithm was implemented (Appendix \ref{appendix:serial}.) This version has a number of improvements over a na\"ive implementation.
+        %% richard finish this paragraph
 
     \subsection{OpenMP}
-        To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma was used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause was used so that the scheduling strategy could be set by changing the command-line environment variable \verb|OMP_SCHEDULE|. In testing, the \verb|guided| strategy resulted in the most speedup.
+        To compute Mandelbrot on multiple CPU threads, the OpenMP \verb|parallel for| pragma is used (Appendix \ref{appendix:omp}.) The \verb|schedule(runtime)| clause allows the scheduling strategy to be set by changing the command-line environment variable \verb|OMP_SCHEDULE|. The \verb|dynamic| schedule was hypothesized to be optimal, because some blocks of pixels are easier to compute than others, because they converge faster. In testing, the \verb|guided| strategy resulted in the most speedup. This was a surprising result; there is not an obvious ``reverse taper'' of work to be done per complex number (later computations shouldn't necessarily be much more taxing than earlier ones.)
 
     \subsection{CUDA}
         The CUDA implementation (Appendix \ref{appendix:cuda}) determines the number of pixels for each thread, and each thread computes the color of each pixel assigned to it. These computed values are stored in a shared memory array \verb|colors[]|, which is then copied to host memory after the threads finish.
@@ -60,7 +61,7 @@
 \section{Experimentation}
     The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary among GPUs.
 
-    In each case, one-hundred $1600 \times 1600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
+    In each case, one-hundred $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
 
     \def\boxit#1{%
       \smash{\fboxsep=0pt\llap{\rlap{\fbox{\strut\makebox[#1]{}}}~}}\ignorespaces
@@ -72,16 +73,16 @@
     \caption{Speedup based on thread configuration}
     \begin{tabular}{r | r || r}\label{tab:speedup}
     \# of blocks & threads/block & speedup \\ \hline
-    512                 & 1\,024    & 104.49 \\
-    1\,024              & 512       & 105.89 \\
-    \boxit{150pt}2\,048 & 256       & 106.83 \\
-    4\,096              & 128       & 104.34 \\
-    8\,192              & 64        & 104.84 \\
-    16\,384             & 32        & 104.45
+    512                 & 1\,024    & 17.99 \\
+    1\,024              & 512       & 18.24 \\
+    \boxit{150pt}2\,048 & 256       & 18.35 \\
+    4\,096              & 128       & 18.13 \\
+    8\,192              & 64        & 18.16 \\
+    16\,384             & 32        & 18.15
     \end{tabular}
     \end{table}
 
-    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 106.83x speedup over the serial version. Any improvement is fairly minimal, with only 2.34x difference between the fastest and the slowest thread configurations. The program was run on an NVIDIA GeForce RTX 2060 with compute capability 7.5; it's worth noting that in limited testing on less capable hardware the effect was more pronounced.
+    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 18.35x speedup over the serial version. Any improvement is fairly minimal, with a $\sim 2\%$ difference between the fastest and the slowest thread configurations; though, running higher-resolution instances (more work) would amplifiy any minor speedup differences. The program was run on an NVIDIA 1050; it's worth noting that in limited testing on less capable hardware the effect was more pronounced.
 
 \pagebreak    
 \appendix
@@ -91,8 +92,11 @@
 
         	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint.
 
-        	\item \emph{Richard}: UX (zoom and pan), serial, and OpenMP in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; PowerPoint.
+        	\item \emph{Richard}: UX (X11, zoom and pan), serial, and OpenMP in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; \LaTeX{}; PowerPoint.
         \end{itemize}
+
+    \section{Gallery}
+        
 
     \section{Code}
         \lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
@@ -179,7 +183,7 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin,
 
     \section{Test runs} \label{appendix:testdata}
         \lstset{language={},numbers=none}
-        \lstinputlisting{testing.txt}
+        \lstinputlisting{output.txt}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}

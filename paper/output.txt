@@ -1,0 +1,38 @@
+./benchmark 512 1024 1600 100
+Avg time for Single: 0.392590   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.104665   Instances: 50	Speedup: 3.75
+Avg time for CUDA:   0.021819   Instances: 50	Speedup: 17.99
+
+./benchmark 1024 512 1600 100
+Avg time for Single: 0.392822   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.105190   Instances: 50	Speedup: 3.73
+Avg time for CUDA:   0.021534   Instances: 50	Speedup: 18.24
+
+./benchmark 2048 256 1600 100
+Avg time for Single: 0.392430   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.107263   Instances: 50	Speedup: 3.66
+Avg time for CUDA:   0.021388   Instances: 50	Speedup: 18.35
+./benchmark 4096 128 1600 100
+Avg time for Single: 0.392531   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.112431   Instances: 50	Speedup: 3.49
+Avg time for CUDA:   0.021657   Instances: 50	Speedup: 18.13
+./benchmark 8192 64 1600 100
+Avg time for Single: 0.392719   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.111196   Instances: 50	Speedup: 3.53
+Avg time for CUDA:   0.021627   Instances: 50	Speedup: 18.16
+./benchmark 16384 32 1600 100
+Avg time for Single: 0.392485   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.113756   Instances: 50	Speedup: 3.45
+Avg time for CUDA:   0.021626   Instances: 50	Speedup: 18.15
+./benchmark 128 128 1600 100
+Avg time for Single: 0.392694   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.106649   Instances: 50	Speedup: 3.68
+Avg time for CUDA:   0.054243   Instances: 50	Speedup: 7.24
+./benchmark 256 256 1600 100
+Avg time for Single: 0.392355   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.116372   Instances: 50	Speedup: 3.37
+Avg time for CUDA:   0.040174   Instances: 50	Speedup: 9.77
+./benchmark 512 512 1600 100
+Avg time for Single: 0.392417   Instances: 50	Speedup: 1
+Avg time for OpenMP: 0.117578   Instances: 50	Speedup: 3.34
+Avg time for CUDA:   0.030762   Instances: 50	Speedup: 12.76
