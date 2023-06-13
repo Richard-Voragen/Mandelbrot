@@ -7,6 +7,9 @@
 
 \usepackage{fancyvrb}
 
+\usepackage{graphicx}
+\graphicspath{ {./gallery/} }
+
 \author{
 	Dub\'e, Fletcher\\
 	\texttt{\#921441405}
@@ -58,7 +61,7 @@
         The CUDA implementation (Appendix \ref{appendix:cuda}) determines the number of pixels for each thread, and each thread computes the color of each pixel assigned to it. These computed values are stored in a shared memory array \verb|colors[]|, which is then copied to host memory after the threads finish.
 
 \section{Experimentation}
-    The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. It's worth noting that any optimal values may vary among GPUs.
+    The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. Testing was done on an NVIDIA 1050; any optimal values may vary among GPUs.
 
     In each case, fifty $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
 
@@ -81,7 +84,7 @@
     \end{tabular}
     \end{table}
 
-    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 18.35x speedup over the serial version. Any improvement is fairly minimal, with a $\sim 2\%$ difference between the fastest and the slowest thread configurations; though, running higher-resolution instances (more work) would amplifiy any minor speedup differences. The program was run on an NVIDIA 1050; it's worth noting that in limited testing on less capable hardware the effect was more pronounced.
+    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 18.35x speedup over the serial version. Any improvement is fairly minimal, with a $\sim 2\%$ difference between the fastest and the slowest thread configurations; though, running higher-resolution instances (more work) would amplifiy any minor speedup differences.
 
     \subsection{nvvp}
     %todo Leo
