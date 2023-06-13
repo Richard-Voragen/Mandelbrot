@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{float}
 
 \usepackage{caption}
 \captionsetup[lstlisting]{font={small,tt}}
@@ -24,6 +25,8 @@
 
 \begin{document}
 \maketitle
+
+\includegraphics[width=\textwidth]{gallery/overview.png}
 
 \section{Introduction} \label{sec:intro}
     The \emph{Mandelbrot set} is the set of complex numbers $c$ for which the function
@@ -100,8 +103,25 @@
         	\item \emph{Richard}: UX (X11, zoom and pan), serial, and OpenMP in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; \LaTeX{}; PowerPoint.
         \end{itemize}
 
-    \section{Gallery}
+    \newcommand{\centeredimage}[2]{
+        \vspace*{\fill}%
+        \noindent%
+        \makebox[\textwidth]{\includegraphics[#1]{#2}}%
+        \vspace*{2cm}%
+    }
 
+    \pagebreak
+    \section{Gallery}
+        \centeredimage{width=0.75\paperwidth}{gallery/Image2.png}
+        \clearpage
+        \centeredimage{width=0.75\paperwidth}{gallery/Image3.png}
+        \clearpage
+        \centeredimage{width=0.75\paperwidth}{gallery/Image4.png}
+        \clearpage
+        \centeredimage{width=0.75\paperwidth}{gallery/Image5.png}
+        \clearpage
+        \centeredimage{width=0.75\paperwidth}{gallery/Image6.png}
+        \clearpage
 
     \section{Code}
         \lstset{language=C,stringstyle=\ttfamily, showstringspaces=false, numbers=left, frame=single, framexrightmargin=0pt, columns=fullflexible, breaklines=true, breakatwhitespace=true}
