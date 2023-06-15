@@ -222,8 +222,7 @@ __device__ uint32_t mandel_double(double cr, double ci, int max_iter) {
 
     for (i = 0; i < max_iter; i++){
 		zi = zr * zi;
-		zi += zi;
-		zi += ci;
+		zi += zi + ci;
 		zr = zrsqr - zisqr + cr;
 		zrsqr = zr * zr;
 		zisqr = zi * zi;
@@ -263,6 +262,7 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin,
 double display_double_cuda(double xcen, double ycen, double scale,
         uint32_t *dev_counts, uint32_t *colors){
     dim3 numBlocks(dim,dim);
+    
     double xmin = xcen - (scale/2);
     double ymin = ycen - (scale/2);
     double step = scale / dim;

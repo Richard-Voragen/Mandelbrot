@@ -17,5 +17,6 @@ XBenchmark : mandelbrot.cu
 
 all : mandelbrot XBenchmark benchmark
 
+
 clean :
 	rm -rf *.o mandelbrot XBenchmark benchmark
