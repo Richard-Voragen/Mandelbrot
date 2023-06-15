@@ -1,4 +1,5 @@
-./benchmarkm 2048 256 1600 100 #with more instructions
+# before optimization
+./benchmarkm 2048 256 1600 100
 Avg time for Single: 0.392793   Instances: 50	Speedup: 1
 Avg time for OpenMP: 0.113127   Instances: 50	Speedup: 3.47
 Avg time for CUDA:   0.021473   Instances: 50	Speedup: 18.29
@@ -10,7 +11,9 @@ Avg time for CUDA:   0.021564   Instances: 50	Speedup: 18.28
 Avg time for Single: 0.392286   Instances: 50	Speedup: 1
 Avg time for OpenMP: 0.112156   Instances: 50	Speedup: 3.50
 Avg time for CUDA:   0.021304   Instances: 50	Speedup: 18.41
-./benchmarko 2048 256 1600 100 #with less instructions
+
+# after optimization
+./benchmarko 2048 256 1600 100
 Avg time for Single: 0.396457   Instances: 50	Speedup: 1
 Avg time for OpenMP: 0.153961   Instances: 50	Speedup: 2.58
 Avg time for CUDA:   0.019759   Instances: 50	Speedup: 20.06

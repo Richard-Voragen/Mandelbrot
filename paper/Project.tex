@@ -66,7 +66,7 @@
 \section{Experimentation}
     The primary focus of experimentation was to examine the effect of different CUDA thread configurations on speedup. Specifically, the number of blocks $b$ and the number of threads per block $t$ were varied. In order to facilitate fair comparison, these values are varied such that the total number of threads $t \times b$ remained constant. Testing was done on an NVIDIA 1050; any optimal values may vary among GPUs.
 
-    In each case, fifty $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:testdata}.
+    In each case, fifty $1\,600 \times 1\,600$ instances were run. The total number of threads was limited to 524\,288 because device memory is allocated for each thread. The raw output from test runs is in Appendix \ref{appendix:parameterdata}.
 
     \def\boxit#1{%
       \smash{\fboxsep=0pt\llap{\rlap{\fbox{\strut\makebox[#1]{}}}~}}\ignorespaces
@@ -87,10 +87,14 @@
     \end{tabular}
     \end{table}
 
-    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 18.35x speedup over the serial version. Any improvement is fairly minimal, with a $\sim 2\%$ difference between the fastest and the slowest thread configurations; though, running higher-resolution instances (more work) would amplifiy any minor speedup differences.
+    The results in Table \ref{tab:speedup} suggest that a balance between the number of blocks and the number of threads per block is optimal. Specifically, using 2\,048 blocks and 256 threads per block yielded a 18.35x speedup over the serial version. Any improvement is fairly minimal, with a ${\sim}2\%$ difference between the fastest and the slowest thread configurations; though, running higher-resolution instances (more work) would amplifiy any minor speedup differences.
 
     \subsection{NVIDIA Visual Profiler}
-    The NVIDIA Visual Profiler is a tool that allows the developers of CUDA code to get important insights on how the kernel is running on the device. With this tool, one can learn many details about the kernel including (but not limited to): the amount of time in picoseconds the kernel and the memory transfer (from host to device and vice-versa) take to run; how many registers, threads, and blocks were used by the kernel; the PTX (NVIDIA's assembly language) version of the CUDA code; as well as the amount of inactive and predicated threads. Along with these features, the profiler also gives the developer a detailed analysis of how the kernel is performing and where the bottlenecks are. After running our implementation of the mandelbrot kernel through the profiler, the analysis informed us that the main bottleneck the kernel suffered from was the overusage of functional units, the different logical units present in the GPU. Our code was primarily overusing the FP64 functional unit, responsible for performing operations related to the $double$ type, as this is the primary type used during the computation of the mandelbrot set. From this information, we we're able to minimize the usage of FP64 operations by truncating some operations in the original kernel into less, yet more complicated, instructions. We also attempted to use the less accurate FP32 type, $float$, however this proved to be detrimental during the calculation of the mandelbrot set. With these changes to the instructions we were able to generate and extra 1-2x speedup from the serial version, on top of the 18x speedup the program previously had, bringing our total speedup over the serial version to 20x (values based on NVIDIA 1050, other GPU may show different values). We believe that these performance improvements come primarily from the reduction in instruction count of the program, as well as the reduction of usage of the FP64 functional units.
+    The NVIDIA Visual Profiler (\verb|nvvp|) is a tool that allows the developers of CUDA code to get important insights on how the kernel is running on the device. With this tool, one can learn many details about the kernel including (but not limited to): the amount of time in picoseconds the kernel and the memory transfer (from host to device and vice-versa) take to run; how many registers, threads, and blocks were used by the kernel; the PTX (NVIDIA's assembly language) version of the CUDA code; as well as the amount of inactive and predicated threads. Along with these features, the profiler also gives the developer a detailed analysis of how the kernel is performing and where the bottlenecks are.
+
+    After running our implementation of the Mandelbrot kernel through the profiler, the analysis informed us that the main bottleneck the kernel suffered from was the overusage of functional units, the different logical units present in the GPU. Our code was primarily overusing the FP64 functional unit, responsible for performing operations related to the \verb|double| type, as this is the primary type used during the computation of the Mandelbrot set. From this information, we we're able to minimize the usage of FP64 operations by truncating some operations in the original kernel into fewer, more complicated instructions (Appendix \ref{appendix:assembly}). We also attempted to use the less accurate FP32 type, \verb|float|, however this proved to be detrimental during the calculation of the Mandelbrot set.
+
+    With these changes to the instructions we were able to generate and extra 1-2x speedup from the serial version, on top of the ${\sim}18$x speedup the program previously had, bringing our total speedup over the serial version to ${\sim}20$x (Appendix \ref{appendix:assemblydata}). We believe that these performance improvements come primarily from the reduction in instruction count of the program, as well as the reduction of usage of the FP64 functional units.
 
 \pagebreak    
 \appendix
@@ -98,7 +102,7 @@
         \begin{itemize}
         	\item \emph{Fletcher}: \LaTeX{}; CUDA optimization and testing; PowerPoint.
 
-        	\item \emph{Leonardo}: CUDA optimization and testing; PowerPoint; \LaTeX{}.
+        	\item \emph{Leonardo}: NVVP; CUDA optimization and testing; PowerPoint; \LaTeX{}.
 
         	\item \emph{Richard}: UX (X11, zoom and pan), serial, and OpenMP in \ref{appendix:mandelbrot.cu}; assisted in optimization testing and data collection; \LaTeX{}; PowerPoint.
         \end{itemize}
@@ -202,13 +206,41 @@ __global__ void mandel_kernel(uint32_t *counts, double xmin, double ymin,
     }
 }
 \end{lstlisting}
+        \subsection{Disassembly}\label{appendix:assembly}
+        \lstset{language={}}
+\begin{lstlisting}[caption={before instruction optimization}]
+DMUL R8, R12.reuse, R2.reuse ;
+DADD R22, R20, -R22 ;
+DFMA R8, R12, R2, R8 ;
+DADD R12, R4, R22 ;
+DADD R2, R6, R8 ;
+DMUL R20, R12, R12 ;
+DMUL R8, R2, R2 ;
+DADD R22, R20, R8 ;
+DSETP.GT.AND P0, PT, R22, 4, PT ;
+\end{lstlisting}
 
+\begin{lstlisting}[caption={after instruction optimization}]
+DADD R6, R8, -R10 ;
+DFMA R8, R14.reuse, R12.reuse, R2 ;
+DADD R6, R4, R6 ;
+DFMA R12, R14, R12, R8 ;
+DMUL R8, R6, R6 ;
+DMUL R10, R12, R12 ;
+DADD R14, R8, R10 ;
+DSETP.GT.AND P0, PT, R14, 4, PT ;
+\end{lstlisting}
+    \lstset{language=C}
         \subsection{Entire Program} \label{appendix:mandelbrot.cu}
             \lstinputlisting[caption={mandelbrot.cu}]{../mandelbrot.cu}
 
-    \section{Test runs} \label{appendix:testdata}
+    \section{Test runs}
+    \subsection{Parameter optimization}\label{appendix:parameterdata}
         \lstset{language={},numbers=none}
-        \lstinputlisting{output.txt}
+        \lstinputlisting[caption={parameter optimization}]{output.txt}
+
+    \subsection{Instruction optimization}\label{appendix:assemblydata}
+        \lstinputlisting[caption={instruction optimization. ./benchmarkm invokes the unoptimized version.}]{assemblyoutput.txt}
 
 \bibliography{biblio} 
 \bibliographystyle{ieeetr}
